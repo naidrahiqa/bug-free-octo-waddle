@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Kaoruko Control Panel</title>
+    <style>
+        :root {
+            --primary: #80deea;
+            --bg: #121212;
+            --card: #1e1e1e;
+            --text: #ffffff;
+        }
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            width: 100%;
+            max-width: 500px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .banner {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid var(--primary);
+            box-shadow: 0 0 15px var(--primary);
+        }
+        h1 { color: var(--primary); margin: 10px 0 5px 0; font-size: 1.5em; }
+        .quote { font-style: italic; opacity: 0.7; font-size: 0.9em; margin-bottom: 20px; }
+        
+        .card {
+            background: var(--card);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+        h2 { font-size: 1.1em; margin-top: 0; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        
+        .btn-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        button {
+            background: #333;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        button:active { transform: scale(0.95); }
+        button.active {
+            background: var(--primary);
+            color: #000;
+            box-shadow: 0 0 10px var(--primary);
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            background: #444;
+            margin-bottom: 10px;
+        }
+        
+        #log-view {
+            width: 100%;
+            height: 150px;
+            background: #000;
+            color: #0f0;
+            font-family: monospace;
+            font-size: 0.8em;
+            padding: 10px;
+            border-radius: 8px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <img src="../web_banner.png" class="banner" alt="Kaoruko">
+            <h1>My Kaoruko v1.4</h1>
+            <p class="quote">"Project Infinity X Stability Edition"</p>
+        </div>
+
+        <div class="card">
+            <h2>Memory Status</h2>
+            <div class="status-badge" id="ram-status">Checking RAM...</div>
+            <div class="btn-group">
+                <button id="btn-optimize" onclick="optimizeRAM()">OPTIMIZE RAM</button>
+                <button onclick="compactMemory()">COMPACT</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>System Health</h2>
+            <div class="btn-group">
+                <button onclick="runCmd('am broadcast -a android.intent.action.MEDIA_SCANNER_SCAN_FILE -d file:///sdcard')">Fix Storage</button>
+                <button onclick="refreshLog()">Refresh Log</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Stability Log</h2>
+            <div id="log-view">Loading log...</div>
+        </div>
+    </div>
+
+    <script>
+        async function runCmd(cmd) {
+            if (typeof ksu !== 'undefined') {
+                return await ksu.exec(cmd);
+            } else {
+                console.log("Mock Exec: " + cmd);
+                return { stdout: "WEBUI Mode (Preview Only)", stderr: "" };
+            }
+        }
+
+        async function optimizeRAM() {
+            const status = document.getElementById('ram-status');
+            status.innerText = "Cleaning RAM...";
+            await runCmd('sync; echo 3 > /proc/sys/vm/drop_caches');
+            await runCmd('am kill-all');
+            status.innerText = "RAM Optimized!";
+            refreshLog();
+            updateRAMInfo();
+        }
+
+        async function compactMemory() {
+            const status = document.getElementById('ram-status');
+            status.innerText = "Compacting Memory...";
+            await runCmd('echo 1 > /proc/sys/vm/compact_memory');
+            status.innerText = "Memory Compacted!";
+            updateRAMInfo();
+        }
+
+        async function updateRAMInfo() {
+            const meminfo = await runCmd('cat /proc/meminfo | grep MemFree');
+            document.getElementById('ram-status').innerText = "Free: " + meminfo.stdout.split(':')[1].trim();
+        }
+
+        async function refreshLog() {
+            const res = await runCmd('tail -n 20 /data/local/tmp/my_kaoruko.log');
+            document.getElementById('log-view').innerText = res.stdout || "Log empty or not found.";
+        }
+
+        window.onload = async () => {
+            updateRAMInfo();
+            refreshLog();
+        };
+    </script>
+</body>
+</html>

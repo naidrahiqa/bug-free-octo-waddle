@@ -1,0 +1,23 @@
+#!/sbin/sh
+TMPDIR=/dev/tmp
+rm -rf $TMPDIR
+mkdir -p $TMPDIR
+unzip -o "$ZIPFILE" -d $TMPDIR >&2
+if [ ! -f $TMPDIR/module.prop ]; then
+    echo "! Unable to extract module zip"
+    exit 1
+fi
+if [ -f /data/adb/magisk/util_functions.sh ]; then
+    . /data/adb/magisk/util_functions.sh
+elif [ -f /data/adb/ksud ] ; then
+    MODPATH=${TMPDIR}
+else
+    echo "! Unsupported manager"
+    exit 1
+fi
+set_perm_recursive $MODPATH 0 0 0755 0644
+set_perm $MODPATH/service.sh 0 0 0755
+if [ ! -z "$MODPATH" ] && [ "$MODPATH" != "$TMPDIR" ]; then
+    cp -af $TMPDIR/* $MODPATH/
+fi
+exit 0

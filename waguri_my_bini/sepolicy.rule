@@ -1,0 +1,23 @@
+# Waguri v2.0 - SELinux Rules for Project InfinityX (POCO F5)
+# Fixes: Storage visibility, foreground service crashes, MediaProvider access
+
+# 1. STORAGE ACCESS - Fixes gallery/files not detecting storage
+allow { untrusted_app untrusted_app_all system_app platform_app priv_app } { mnt_user_file mnt_pass_through_file storage_file } dir { read open getattr search }
+allow { untrusted_app untrusted_app_all system_app platform_app priv_app } { mnt_user_file mnt_pass_through_file storage_file } file { read open getattr }
+allow { untrusted_app untrusted_app_all system_app platform_app priv_app } { sdcardfs media_rw_data_file } dir { read open getattr search }
+allow { untrusted_app untrusted_app_all system_app platform_app priv_app } { sdcardfs media_rw_data_file } file { read open getattr }
+
+# 2. MEDIA PROVIDER ACCESS - Fixes storage scanning
+allow system_server self:capability { sys_resource }
+allow system_server cgroup:file { write open }
+allow system_server cgroup_v2:file { write open }
+
+# 3. FOREGROUND SERVICE FIX - Fixes EasyTether and similar app crashes
+allow { untrusted_app untrusted_app_all } self:capability { net_admin }
+allow system_server { untrusted_app untrusted_app_all } process { getsched setsched }
+
+# 4. SURFACEFLINGER BINDER - Fixes UI rendering issues
+allow surfaceflinger { untrusted_app untrusted_app_all } binder { call transfer }
+
+# 5. FINGERPRINT & HAL ACCESS
+allow hal_fingerprint_default hal_power_hwservice hwservice_manager find
