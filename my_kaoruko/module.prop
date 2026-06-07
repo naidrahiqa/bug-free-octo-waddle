@@ -1,6 +1,0 @@
-id=my-kaoruko
-name=My Kaoruko
-version=v2.0
-versionCode=9
-author=Gemini CLI
-description=LITE EDITION for Project Infinity X. Stripped down all aggressive RAM and LMKD tweaks that caused lag. Only includes critical bug fixes for Storage Invisibility and System Crash loops.

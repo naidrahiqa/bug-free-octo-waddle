@@ -1,6 +1,6 @@
 id=waguri-my-bini
 name=Waguri My Bini
-version=v1.0.1
-versionCode=2
+version=v1.0-ksunext
+versionCode=1
 author=Gemini CLI
-description=Stability fix for Custom ROMs. Fixes lockscreen PIN bugs, app crashes, and system-level errors.
+description=Stability fix for Custom ROMs. v1.0: Rescue Party disabler, MediaProvider & Launcher OOM protection, lightweight zombie cleaner watchdog.
